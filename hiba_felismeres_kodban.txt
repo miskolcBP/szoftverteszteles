@@ -1,0 +1,39 @@
+1. Értsd meg a specifikációt.
+
+2. Készíts legalább 10 tesztesetet.
+
+3. Minden tesztesethez add meg az elvárt eredményt.
+
+4. Futtasd le kézzel a függvényt.
+
+5. Dokumentáld a megtalált hibákat.
+
+6. Minden hibához adj reprodukáló tesztesetet.
+
+7. A munkát commitold a saját branchedre.
+
+--------------------------------------------------
+
+1. 
+Határértékeknél vizsgálat pl 9000, 9999, 10000
+Kalkuláció helyessége
+
+Tesztesetek:
+IN: (9000, false) OUT: 9000 EXPECTED: 9000 - CORRECT
+IN: (,) OUT: EXPECTED: - 
+
+2.
+Határérték első 15p, < helyett <=
+Kalkuláció helyessége, % számítás vip, 1. óra nem számít Math.floor miatt
+
+3.
+Határérték age <= 6 helyett <
+Kalkuláció helyessége, egyszerre csak a legnagyobb kedvezmény alkalmazható - nincs, hibás felár 3d-nél,
+
+
+main
+országkód ellenőrzés
+változótípus ellenőrzés
+5 és 20kg nál nem jó
+nincs negatív szám ellenőrzés
+még 5 valami
