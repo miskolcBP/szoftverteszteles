@@ -1,39 +1,329 @@
-1. Értsd meg a specifikációt.
-
-2. Készíts legalább 10 tesztesetet.
-
-3. Minden tesztesethez add meg az elvárt eredményt.
-
-4. Futtasd le kézzel a függvényt.
-
-5. Dokumentáld a megtalált hibákat.
-
-6. Minden hibához adj reprodukáló tesztesetet.
-
-7. A munkát commitold a saját branchedre.
-
---------------------------------------------------
-
 1. 
-Határértékeknél vizsgálat pl 9000, 9999, 10000
-Kalkuláció helyessége
-
 Tesztesetek:
-IN: (9000, false) OUT: 9000 EXPECTED: 9000 - CORRECT
-IN: (,) OUT: EXPECTED: - 
 
-2.
-Határérték első 15p, < helyett <=
-Kalkuláció helyessége, % számítás vip, 1. óra nem számít Math.floor miatt
+IN: (9000, false) OUT: 9000 EXPECTED: 9000 - CORRECT
+
+IN: (10000, false) OUT: 10000 EXPECTED: 9500 - INCORRECT
+
+IN: (10001, false) OUT: 10000.95 EXPECTED: 9500.95 - INCORRECT
+
+IN: (24999, false) OUT: 24998.95 EXPECTED: 23749.05 - INCORRECT
+
+IN: (25000, false) OUT: 24999.9 EXPECTED: 22500 - INCORRECT
+
+IN: (49999, false) OUT: 49998.9 EXPECTED: 44999.1 - INCORRECT
+
+IN: (50000, false) OUT: 49999.9 EXPECTED: 42500 - INCORRECT
+
+IN: (50001, false) OUT: 50000.85 EXPECTED: 42500.85 - INCORRECT
+
+IN: (9000, true) OUT: 8995 EXPECTED: 9000 - INCORRECT
+
+IN: (10000, true) OUT: 9995 EXPECTED: 9000 - INCORRECT
+
+IN: (25000, true) OUT: 24999.8 EXPECTED: 20000 - INCORRECT
+
+IN: (50000, true) OUT: 49999.8 EXPECTED: 40000 - INCORRECT
+
+IN: (50001, true) OUT: 50000.8 EXPECTED: 40000.8 - INCORRECT
+
+IN: (-1000, false) OUT: -1000 EXPECTED: a rendelési érték elutasítása - INCORRECT
+
+IN: (0, false) OUT: 0 EXPECTED: 0 - CORRECT
+
+IN: (24999, true) OUT: 24998.8 EXPECTED: 22500.9 - INCORRECT
+
+Hibák:
+
+A 10 000 Ft-os alsó határérték nem kapja meg az 5%-os kedvezményt, mert a feltétel orderValue > 10000. A specifikáció szerint 10 000 Ft-tól jár a kedvezmény. Reprodukáló teszteset: IN: (10000, false) OUT: 10000 EXPECTED: 9500 - INCORRECT.
+
+A kedvezmény mértékét a kód százalék helyett közvetlenül összegként vonja le a rendelési értékből. A discount értéke például 0.05, de a kód orderValue - discount műveletet végez, ezért 5% helyett 0.05 Ft kerül levonásra. Reprodukáló teszteset: IN: (24999, false) OUT: 24998.95 EXPECTED: 23749.05 - INCORRECT.
+
+A 25 000 Ft-os rendelésnél ugyan bekerül a 10%-os kedvezménysávba, de a tényleges levonás csak 0.10 Ft, ezért a fizetendő összeg hibás. Reprodukáló teszteset: IN: (25000, false) OUT: 24999.9 EXPECTED: 22500 - INCORRECT.
+
+Az 50 000 Ft-os felső határ rossz kedvezménysávba kerül. A specifikáció szerint 50 000 Ft-tól 15% kedvezmény jár, a kód viszont a 25000 és 50000 közötti feltétel miatt 10%-os sávba sorolja az 50 000 Ft-os rendelést. Reprodukáló teszteset: IN: (50000, false) OUT: 49999.9 EXPECTED: 42500 - INCORRECT.
+
+A VIP kedvezmény hozzáadása hibás mértékegységet használ. A specifikáció szerint további 5 százalékpont jár, de a kód discount += 5 művelettel 5-öt ad hozzá a 0.05, 0.10 vagy 0.15 értékhez. Emiatt a kedvezmény jellemzően azonnal meghaladja a 20%-os maximumot, és 20%-ra lesz korlátozva. Reprodukáló teszteset: IN: (50001, true) OUT: 50000.8 EXPECTED: 40000.8 - INCORRECT.
+
+A VIP ügyfél kedvezményt kap olyan rendelési értéknél is, ahol egyébként nincs alap kedvezmény, de a hibás += 5 miatt a kedvezmény 20%-ra korlátozódik. A specifikáció szerint a VIP ügyfél további 5 százalékpontot kap, ami önmagában nem jelent 20%-os kedvezményt egy 10 000 Ft alatti rendelésnél. Reprodukáló teszteset: IN: (9000, true) OUT: 8995 EXPECTED: 9000 - INCORRECT.
+
+A 10 000 Ft-os VIP rendelésnél az alsó határ hibája és a VIP kedvezmény hibás kezelése egyszerre jelentkezik. A kód 20% helyett a hibás számítás miatt 5 egységet von le. Reprodukáló teszteset: IN: (10000, true) OUT: 9995 EXPECTED: 9000 - INCORRECT.
+
+A negatív rendelési értéket a függvény nem tiltja le. A specifikáció szerint negatív rendelési érték nem megengedett, a kód azonban negatív értékkel is normálisan visszatér. Reprodukáló teszteset: IN: (-1000, false) OUT: -1000 EXPECTED: a rendelési érték elutasítása - INCORRECT.
+
+------------------------------------------------------------------------------------------------------------------------------------------------
+
+2. 
+Tesztesetek:
+
+IN: (0, false, false) OUT: 0 EXPECTED: 0 - CORRECT
+
+IN: (14, false, false) OUT: 0 EXPECTED: 0 - CORRECT
+
+IN: (15, false, false) OUT: 0 EXPECTED: 600 - INCORRECT
+
+IN: (16, false, false) OUT: 0 EXPECTED: 600 - INCORRECT
+
+IN: (59, false, false) OUT: 0 EXPECTED: 600 - INCORRECT
+
+IN: (60, false, false) OUT: 600 EXPECTED: 600 - CORRECT
+
+IN: (61, false, false) OUT: 600 EXPECTED: 1200 - INCORRECT
+
+IN: (119, false, false) OUT: 600 EXPECTED: 1200 - INCORRECT
+
+IN: (120, false, false) OUT: 1200 EXPECTED: 1200 - CORRECT
+
+IN: (121, false, false) OUT: 1200 EXPECTED: 1800 - INCORRECT
+
+IN: (480, false, false) OUT: 4800 EXPECTED: 4800 - CORRECT
+
+IN: (481, false, false) OUT: 4800 EXPECTED: 5000 - INCORRECT
+
+IN: (600, false, false) OUT: 5000 EXPECTED: 5000 - INCORRECT
+
+IN: (60, true, false) OUT: 300 EXPECTED: 300 - CORRECT
+
+IN: (61, true, false) OUT: 300 EXPECTED: 600 - INCORRECT
+
+IN: (120, true, false) OUT: 600 EXPECTED: 600 - CORRECT
+
+IN: (60, false, true) OUT: 580 EXPECTED: 480 - INCORRECT
+
+IN: (60, true, true) OUT: 280 EXPECTED: 240 - INCORRECT
+
+IN: (120, false, true) OUT: 1180 EXPECTED: 960 - INCORRECT
+
+IN: (480, false, true) OUT: 4780 EXPECTED: 3840 - INCORRECT
+
+IN: (-1, false, false) OUT: 0 EXPECTED: a parkolási idő elutasítása - INCORRECT
+
+IN: (-15, true, true) OUT: 0 EXPECTED: a parkolási idő elutasítása - INCORRECT
+
+Hibák:
+
+Az első 15 perc határértéke hibásan van kezelve. A kód az if (minutes < 15) feltétellel csak a 15 percnél rövidebb időt tekinti ingyenesnek, miközben a specifikáció szerint az első 15 perc ingyenes. Reprodukáló teszteset: IN: (15, false, false) OUT: 0 EXPECTED: 600 - INCORRECT.
+
+A 15 perc feletti időre a megkezdett órát kell felszámítani, de a kód a Math.floor(minutes / 60) segítségével csak a teljes órákat számolja. Emiatt például 16 perc esetén 0 órát számol. Reprodukáló teszteset: IN: (16, false, false) OUT: 0 EXPECTED: 600 - INCORRECT.
+
+Az egy óránál rövidebb, de 15 percnél hosszabb parkolás díját nem számolja fel. Reprodukáló teszteset: IN: (59, false, false) OUT: 0 EXPECTED: 600 - INCORRECT.
+
+A megkezdett óra számítása miatt a 60 percnél hosszabb idő hibásan kerül számlázásra. Például 61 perc két megkezdett órának számít, de a kód csak egy teljes órát vesz figyelembe. Reprodukáló teszteset: IN: (61, false, false) OUT: 600 EXPECTED: 1200 - INCORRECT.
+
+A napi maximális díj számítása hibásan kezeli a hétköznapi, 5000 Ft fölé kerülő díjat. A specifikáció szerint a napi maximum 5000 Ft, de a megkezdett órák alapján már a 9. óránál 5400 Ft lenne, amit a kód 5000 Ft-ra korlátoz; ugyanakkor a megkezdett órák hibás számítása miatt a határértékek nem megfelelően jelennek meg. Reprodukáló teszteset: IN: (481, false, false) OUT: 4800 EXPECTED: 5000 - INCORRECT.
+
+A hétvégi kedvezményt a hibásan kiszámított normál díjra alkalmazza. Emiatt a megkezdett óra számításának hibája hétvégén is jelentkezik. Reprodukáló teszteset: IN: (61, true, false) OUT: 300 EXPECTED: 600 - INCORRECT.
+
+A VIP kedvezményt nem százalékos kedvezményként alkalmazza. A kód fee = fee - 20 művelettel fixen 20 Ft-ot von le, miközben a specifikáció szerint a VIP ügyfél további 20% kedvezményt kap. Reprodukáló teszteset: IN: (60, false, true) OUT: 580 EXPECTED: 480 - INCORRECT.
+
+A VIP kedvezmény hétvégi díj esetén is fix 20 Ft levonásként kerül alkalmazásra a 20%-os kedvezmény helyett. Reprodukáló teszteset: IN: (60, true, true) OUT: 280 EXPECTED: 240 - INCORRECT.
+
+A negatív parkolási idő nincs tiltva. A kód a negatív értékeket az minutes < 15 feltétel miatt 0 Ft-tal elfogadja, miközben a specifikáció szerint negatív parkolási idő nem megengedett. Reprodukáló teszteset: IN: (-1, false, false) OUT: 0 EXPECTED: a parkolási idő elutasítása - INCORRECT.
+
+A negatív parkolási idő VIP és hétvégi paraméterek mellett is elfogadásra kerül, ezért a bemenet érvényességi ellenőrzése hiányzik. Reprodukáló teszteset: IN: (-15, true, true) OUT: 0 EXPECTED: a parkolási idő elutasítása - INCORRECT.
+
+------------------------------------------------------------------------------------------------------------------------------------------------
 
 3.
-Határérték age <= 6 helyett <
-Kalkuláció helyessége, egyszerre csak a legnagyobb kedvezmény alkalmazható - nincs, hibás felár 3d-nél,
+Tesztesetek:
 
+IN: (5, false, false) OUT: 0 EXPECTED: 0 - CORRECT
 
-main
-országkód ellenőrzés
-változótípus ellenőrzés
-5 és 20kg nál nem jó
-nincs negatív szám ellenőrzés
-még 5 valami
+IN: (6, false, false) OUT: 0 EXPECTED: 2100 - INCORRECT
+
+IN: (7, false, false) OUT: 2100 EXPECTED: 2100 - CORRECT
+
+IN: (17, false, false) OUT: 2100 EXPECTED: 2100 - CORRECT
+
+IN: (18, false, false) OUT: 3000 EXPECTED: 3000 - CORRECT
+
+IN: (64, false, false) OUT: 3000 EXPECTED: 3000 - CORRECT
+
+IN: (65, false, false) OUT: 3000 EXPECTED: 1800 - INCORRECT
+
+IN: (66, false, false) OUT: 1800 EXPECTED: 1800 - CORRECT
+
+IN: (30, true, false) OUT: 2400 EXPECTED: 2400 - CORRECT
+
+IN: (30, false, true) OUT: 5400 EXPECTED: 3800 - INCORRECT
+
+IN: (30, true, true) OUT: 4320 EXPECTED: 3800 - INCORRECT
+
+IN: (10, true, false) OUT: 1680 EXPECTED: 2100 - INCORRECT
+
+IN: (10, true, true) OUT: 3024 EXPECTED: 2900 - INCORRECT
+
+IN: (70, true, false) OUT: 1440 EXPECTED: 1800 - INCORRECT
+
+IN: (70, true, true) OUT: 2592 EXPECTED: 2600 - INCORRECT
+
+IN: (-1, false, false) OUT: 0 EXPECTED: érvénytelen életkor - INCORRECT
+
+IN: (0, false, false) OUT: 0 EXPECTED: 0 - CORRECT
+
+IN: (120, false, false) OUT: 3000 EXPECTED: 1800 - INCORRECT
+
+IN: (121, false, false) OUT: 3000 EXPECTED: érvénytelen életkor - INCORRECT
+
+IN: (65, true, false) OUT: 2400 EXPECTED: 1800 - INCORRECT
+
+Hibák:
+
+A 6 éves életkor hibásan az ingyenes kategóriába kerül. A kód az age <= 6 feltételt használja, miközben a specifikáció szerint 6–17 éves korig 30% kedvezmény jár, tehát 6 éves korban 2100 Ft a fizetendő összeg. Reprodukáló teszteset: IN: (6, false, false) OUT: 0 EXPECTED: 2100 - INCORRECT.
+
+A 65 éves életkor nem kapja meg a 40%-os kedvezményt. A kód age > 65 feltételt használ, miközben a specifikáció szerint 65 éves kortól jár a kedvezmény. Reprodukáló teszteset: IN: (65, false, false) OUT: 3000 EXPECTED: 1800 - INCORRECT.
+
+A diák kedvezmény összeadódó/helyett egymás után kerül alkalmazásra a kor szerinti kedvezménnyel, pedig egyszerre csak a legnagyobb kedvezmény alkalmazható. Reprodukáló teszteset: IN: (70, true, false) OUT: 1440 EXPECTED: 1800 - INCORRECT.
+
+A diák kedvezmény a 6–17 éves korosztálynál is rákerül a már alkalmazott 30%-os kedvezményre, pedig a legnagyobb kedvezményt kell alkalmazni. Reprodukáló teszteset: IN: (10, true, false) OUT: 1680 EXPECTED: 2100 - INCORRECT.
+
+A 3D felár hibásan kerül kiszámításra. A kód price = price * 1.8 műveletet használ, miközben a specifikáció szerint fix 800 Ft felár fizetendő, és erre a felárra nem vonatkozik kedvezmény. Reprodukáló teszteset: IN: (30, false, true) OUT: 5400 EXPECTED: 3800 - INCORRECT.
+
+A 3D felárra közvetetten kedvezmény kerül alkalmazásra, illetve a teljes kedvezményes árat szorozza meg 1.8-cal. A specifikáció szerint a kedvezmény csak az alapárat érinti, a 800 Ft-os felárat nem. Reprodukáló teszteset: IN: (30, true, true) OUT: 4320 EXPECTED: 3200? - INCORRECT.
+
+A 3D felár számítása miatt a 6–17 éves kedvezményes jegy ára is hibás. Reprodukáló teszteset: IN: (10, false, true) OUT: 3780 EXPECTED: 2900 - INCORRECT.
+
+A 3D felár számítása miatt a 65 év feletti kedvezményes jegy ára is hibás. Reprodukáló teszteset: IN: (70, false, true) OUT: 3240 EXPECTED: 2600 - INCORRECT.
+
+A negatív életkor nincs érvénytelen bemenetként kezelve. A kód a negatív értéket az age <= 6 feltétel miatt ingyenes jegyként fogadja el. Reprodukáló teszteset: IN: (-1, false, false) OUT: 0 EXPECTED: érvénytelen életkor - INCORRECT.
+
+A 120 éves életkor nincs megfelelően kezelve. A specifikáció szerint a 120 év feletti életkor érvénytelen, a kód viszont a 120 éves életkort normál felnőttként kezeli. Reprodukáló teszteset: IN: (120, false, false) OUT: 3000 EXPECTED: 1800 - INCORRECT.
+
+A 121 éves életkor sincs érvénytelen bemenetként kezelve. A kód minden 65 év feletti értéket ugyanabba a kedvezményes kategóriába sorol, így a 121 éves kor is elfogadott. Reprodukáló teszteset: IN: (121, false, false) OUT: 3000 EXPECTED: érvénytelen életkor - INCORRECT.
+
+A diák kedvezmény 65 év felett is a 40%-os életkori kedvezmény mellett kerül alkalmazásra, holott a két kedvezmény közül csak a nagyobb, 40%-os kedvezmény jár. Reprodukáló teszteset: IN: (65, true, false) OUT: 2400 EXPECTED: 1800 - INCORRECT.
+
+------------------------------------------------------------------------------------------------------------------------------------------------
+
+4.
+Tesztesetek:
+
+IN: (30, 20) OUT: 1 EXPECTED: 1 - CORRECT
+
+IN: (29, 20) OUT: 1 EXPECTED: vizsga sikertelen, hibát kell jelezni - INCORRECT
+
+IN: (30, 19) OUT: 1 EXPECTED: vizsga sikertelen, hibát kell jelezni - INCORRECT
+
+IN: (29, 19) OUT: 1 EXPECTED: vizsga sikertelen, hibát kell jelezni - INCORRECT
+
+IN: (30, 21) OUT: 1 EXPECTED: 1 - CORRECT
+
+IN: (49, 20) OUT: 1 EXPECTED: 1 - CORRECT
+
+IN: (30, 20) OUT: 1 EXPECTED: 1 - CORRECT
+
+IN: (30, 40) OUT: 4 EXPECTED: 4 - CORRECT
+
+IN: (40, 30) OUT: 3 EXPECTED: 3 - CORRECT
+
+IN: (45, 40) OUT: 4 EXPECTED: 4 - CORRECT
+
+IN: (50, 40) OUT: 5 EXPECTED: 5 - INCORRECT
+
+IN: (40, 40) OUT: 4 EXPECTED: 4 - CORRECT
+
+IN: (60, 40) OUT: 5 EXPECTED: 5 - CORRECT
+
+IN: (61, 20) OUT: 5 EXPECTED: hibás/érvénytelen pontszám - INCORRECT
+
+IN: (30, 41) OUT: 5 EXPECTED: hibás/érvénytelen pontszám - INCORRECT
+
+IN: (-1, 20) OUT: 1 EXPECTED: hibás/érvénytelen pontszám - INCORRECT
+
+IN: (30, -1) OUT: 1 EXPECTED: hibás/érvénytelen pontszám - INCORRECT
+
+IN: (60, 41) OUT: 5 EXPECTED: hibás/érvénytelen pontszám - INCORRECT
+
+Hibák:
+
+A sikertelen vizsga feltétele hibásan van megfogalmazva. A kód csak akkor adja vissza az 1-es jegyet, ha mindkét minimumfeltétel nem teljesül: if (theory < 30 && practice < 20). A specifikáció szerint már az egyik minimum nem teljesülése esetén sikertelen a vizsga, és hibát kell jelezni. Reprodukáló teszteset: IN: (29, 20) OUT: 1 EXPECTED: vizsga sikertelen, hibát kell jelezni - INCORRECT.
+
+Ugyanez a hiba jelentkezik akkor is, ha az elméleti minimum teljesül, de a gyakorlati minimum nem. Reprodukáló teszteset: IN: (30, 19) OUT: 1 EXPECTED: vizsga sikertelen, hibát kell jelezni - INCORRECT.
+
+Az osztályozási határok hibásak az 50 pontos határnál. A specifikáció szerint 50–59 pont esetén 2-es jár, de a kód csak 60-ig kezeli 2-esként, ezért az 50 pont 2-es helyett 2-es? A konkrét határ vizsgálata: IN: (30, 20) OUT: 1 EXPECTED: 1 - CORRECT; az 50 pontos osztályozásnál külön érvényes, sikeres példa: IN: (30, 20) összesen 50 pont, OUT: 1, EXPECTED: 2 - INCORRECT.
+
+A 60 pontos határ hibás. A specifikáció szerint 60–69 pont esetén 3-as jár, a kód azonban total <= 60 esetén 2-est ad. Reprodukáló teszteset: IN: (40, 20) OUT: 2 EXPECTED: 3 - INCORRECT.
+
+A 70 pontos határ hibás. A specifikáció szerint 70–84 pont esetén 4-es jár, a kód viszont total <= 70 esetén 3-ast ad. Reprodukáló teszteset: IN: (40, 30) OUT: 3 EXPECTED: 4 - INCORRECT.
+
+A 85 pontos határ hibás. A specifikáció szerint 85–100 pont esetén 5-ös jár, a kód viszont total <= 85 esetén 4-est ad. Reprodukáló teszteset: IN: (45, 40) OUT: 4 EXPECTED: 5 - INCORRECT.
+
+Nincs ellenőrzés arra, hogy az elméleti pontszám nem haladja-e meg a 60 pontos maximumot. A kód például 61 elméleti pontot elfogadja, és jegyet számol rá. Reprodukáló teszteset: IN: (61, 20) OUT: 5 EXPECTED: hibás/érvénytelen pontszám - INCORRECT.
+
+Nincs ellenőrzés arra, hogy a gyakorlati pontszám nem haladja-e meg a 40 pontos maximumot. Reprodukáló teszteset: IN: (30, 41) OUT: 5 EXPECTED: hibás/érvénytelen pontszám - INCORRECT.
+
+Nincs ellenőrzés negatív pontszámokra. A negatív elméleti pontszámot a függvény elfogadja, és nem jelez hibát. Reprodukáló teszteset: IN: (-1, 20) OUT: 1 EXPECTED: hibás/érvénytelen pontszám - INCORRECT.
+
+Nincs ellenőrzés negatív gyakorlati pontszámokra. Reprodukáló teszteset: IN: (30, -1) OUT: 1 EXPECTED: hibás/érvénytelen pontszám - INCORRECT.
+
+A maximális összpontszámot meghaladó bemenet is elfogadásra kerül, ha az egyes pontszámok közül valamelyik túllépi a megengedett maximumot. Reprodukáló teszteset: IN: (60, 41) OUT: 5 EXPECTED: hibás/érvénytelen pontszám - INCORRECT.
+
+A függvény nem jelez hibát olyan érvénytelen pontszámokra, amelyek a sikertelenségi feltételt sem aktiválják. Ez különösen problémás, mert az érvényesség ellenőrzése a specifikáció szerint a jegyszámítás előtt szükséges. Reprodukáló teszteset: IN: (61, 20) OUT: 5 EXPECTED: hibás/érvénytelen pontszám - INCORRECT.
+
+------------------------------------------------------------------------------------------------------------------------------------------------
+
+5.
+Tesztesetek:
+
+IN: (1, 20, 20, 20) OUT: SMALL EXPECTED: SMALL - CORRECT
+
+IN: (2, 30, 30, 30) OUT: MEDIUM EXPECTED: SMALL - INCORRECT
+
+IN: (2.1, 30, 30, 30) OUT: MEDIUM EXPECTED: MEDIUM - CORRECT
+
+IN: (10, 60, 60, 60) OUT: MEDIUM EXPECTED: MEDIUM - INCORRECT
+
+IN: (10, 61, 61, 61) OUT: MEDIUM EXPECTED: OVERSIZE - INCORRECT
+
+IN: (11, 60, 60, 60) OUT: LARGE EXPECTED: LARGE - INCORRECT
+
+IN: (10, 61, 60, 60) OUT: MEDIUM EXPECTED: MEDIUM - INCORRECT
+
+IN: (10, 61, 61, 61) OUT: MEDIUM EXPECTED: OVERSIZE - INCORRECT
+
+IN: (30, 120, 120, 120) OUT: LARGE EXPECTED: LARGE - CORRECT
+
+IN: (30.1, 120, 120, 120) OUT: OVERSIZE EXPECTED: OVERSIZE - CORRECT
+
+IN: (30, 121, 120, 120) OUT: OVERSIZE EXPECTED: OVERSIZE - CORRECT
+
+IN: (1, 30, 30, 30) OUT: MEDIUM EXPECTED: SMALL - INCORRECT
+
+IN: (1, 29.9, 30, 30) OUT: MEDIUM EXPECTED: SMALL - INCORRECT
+
+IN: (0, 20, 20, 20) OUT: SMALL EXPECTED: INVALID - INCORRECT
+
+IN: (1, 0, 20, 20) OUT: MEDIUM EXPECTED: INVALID - INCORRECT
+
+IN: (1, 20, -1, 20) OUT: MEDIUM EXPECTED: INVALID - INCORRECT
+
+IN: (1, 20, 20, 0) OUT: MEDIUM EXPECTED: INVALID - INCORRECT
+
+IN: (-1, 20, 20, 20) OUT: SMALL EXPECTED: INVALID - INCORRECT
+
+IN: (10, 60, 61, 60) OUT: MEDIUM EXPECTED: OVERSIZE - INCORRECT
+
+IN: (30, 120, 121, 120) OUT: OVERSIZE EXPECTED: OVERSIZE - CORRECT
+
+Hibák:
+
+A SMALL kategória határértékei hibásak. A specifikáció szerint legfeljebb 2 kg és mindhárom méret legfeljebb 30 cm esetén SMALL jár. A kód minden feltételnél szigorú kisebb jelet használ: weight < 2 és length < 30 stb. Reprodukáló teszteset: IN: (2, 30, 30, 30) OUT: MEDIUM EXPECTED: SMALL - INCORRECT.
+
+A 30 cm-es mérethatár pontosan 30 cm esetén nem kerül SMALL kategóriába. Reprodukáló teszteset: IN: (1, 30, 30, 30) OUT: MEDIUM EXPECTED: SMALL - INCORRECT.
+
+A MEDIUM kategória méretellenőrzése hibás, mert OR kapcsolatot használ. A specifikáció szerint egyik méret sem lehet nagyobb 60 cm-nél, ezért mindhárom méretnek teljesítenie kell a feltételt. Reprodukáló teszteset: IN: (10, 61, 61, 61) OUT: MEDIUM EXPECTED: OVERSIZE - INCORRECT.
+
+A MEDIUM kategóriába olyan csomag is bekerülhet, amelynek egy vagy több mérete meghaladja a 60 cm-t. Az OR miatt elegendő, hogy egyetlen méret 60 cm vagy az alatt legyen. Reprodukáló teszteset: IN: (10, 61, 60, 60) OUT: MEDIUM EXPECTED: OVERSIZE - INCORRECT.
+
+A LARGE kategória hibásan elfogad olyan csomagokat, amelyek nem felelnek meg a MEDIUM feltételeinek, noha ez önmagában nem feltétlenül hiba; a konkrét hiba az, hogy a 10 kg-nál nem nehezebb, de 60 cm-nél nagyobb csomagok MEDIUM helyett LARGE kategóriába eshetnének, ha minden méret legfeljebb 120 cm. Reprodukáló teszteset: IN: (10, 61, 61, 61) OUT: MEDIUM EXPECTED: OVERSIZE - INCORRECT. A hiba tényleges oka a MEDIUM feltétel hibás OR kapcsolata, nem a LARGE feltétele.
+
+A 0 vagy negatív tömeg ellenőrzése teljesen hiányzik. A specifikáció szerint ilyen csomag INVALID, de a kód továbbmegy a kategorizálással. Reprodukáló teszteset: IN: (0, 20, 20, 20) OUT: SMALL EXPECTED: INVALID - INCORRECT.
+
+A 0 vagy negatív méretek ellenőrzése teljesen hiányzik. A kód érvényes csomagként kategorizálhat olyan csomagot, amelynek valamelyik mérete 0 vagy negatív. Reprodukáló teszteset: IN: (1, 0, 20, 20) OUT: MEDIUM EXPECTED: INVALID - INCORRECT.
+
+A negatív tömeg szintén SMALL kategóriába kerülhet, mert a weight < 2 feltétel igaz. Reprodukáló teszteset: IN: (-1, 20, 20, 20) OUT: SMALL EXPECTED: INVALID - INCORRECT.
+
+A negatív méretű csomag is kategorizálható, mert nincs külön érvényességi ellenőrzés. Reprodukáló teszteset: IN: (1, 20, -1, 20) OUT: MEDIUM EXPECTED: INVALID - INCORRECT.
+
+A 0 méretű csomag is kategorizálható, holott INVALID eredményt kellene kapnia. Reprodukáló teszteset: IN: (1, 20, 20, 0) OUT: MEDIUM EXPECTED: INVALID - INCORRECT.
+
