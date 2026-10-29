@@ -5,11 +5,7 @@ function assertInvalid(assert, input) {
   );
 }
 
-QUnit.module("normál működés", function () {
-  QUnit.test("1 -> I", function (assert) {
-    assert.strictEqual(toRoman(1), "I");
-  });
-  
+QUnit.module("normál működés", function () {  
   QUnit.test("2 -> II", function (assert) {
     assert.strictEqual(toRoman(1), "I");
   });
@@ -95,8 +91,24 @@ QUnit.module("kivonásos alak", function () {
   QUnit.test("1994 -> MCMXCIV", function (assert) {
     assert.strictEqual(toRoman(1994), "MCMXCIV");
   });
+});
 
-  QUnit.test("3999 -> MMMCMXCIX", function (assert) {
+QUnit.module("határértékek", function () {
+  QUnit.test("1 alsó határ -> I", function (assert) {
+    assert.strictEqual(toRoman(1), "I");
+  });
+
+  QUnit.test("3999 felső határ -> MMMCMXCIX", function (assert) {
     assert.strictEqual(toRoman(3999), "MMMCMXCIX");
+  });
+
+  QUnit.test("0 a tartomány alatt", function (assert) {
+    assertInvalid(assert, 0);
+    assertInvalid(assert, "0");
+  });
+
+  QUnit.test("4000 a tartomány felett", function (assert) {
+    assertInvalid(assert, 4000);
+    assertInvalid(assert, "4000");
   });
 });
