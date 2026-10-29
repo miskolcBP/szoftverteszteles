@@ -29,5 +29,17 @@ QUnit.module("normál működés", function () {
   QUnit.test("8 -> VIII", function (assert) {
     assert.strictEqual(toRoman(8), "VIII");
   });
+  
+  QUnit.test("10 -> X", function (assert) {
+    assert.strictEqual(toRoman(10), "X");
+  });
+
+  QUnit.test("11 -> XI", function (assert) {
+    assert.strictEqual(toRoman(11), "XI");
+  });
+
+  QUnit.test("20 -> XX", function (assert) {
+    assert.strictEqual(toRoman(20), "XX");
+  });
 });
  
