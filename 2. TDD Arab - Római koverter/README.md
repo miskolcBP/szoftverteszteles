@@ -16,3 +16,6 @@ Nyisd meg a `tests.html` fájlt a böngészőben. A QUnit helyben van, internet 
 - `roman.test.js` – a tesztek
 - `index.html` – a program
 - `tests.html` – a tesztek futtatása
+
+## Releváns commmit-ok:
+https://github.com/miskolcBP/szoftverteszteles/commits/main/2.%20TDD%20Arab%20-%20R%C3%B3mai%20koverter
