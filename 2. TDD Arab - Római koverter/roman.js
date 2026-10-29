@@ -14,17 +14,14 @@ const ROMAN_NUMERALS = [
   [1, "I"],
 ];
 
-function toRoman(input) {
-  let number = NaN;
+const INVALID_INPUT_MESSAGE =
+  "Érvénytelen bemenet: 1 és 3999 közötti egész szám szükséges.";
 
-  if (typeof input === "number") {
-    number = input;
-  } else if (typeof input === "string") {
-    number = Number(input.trim());
-  }
+function toRoman(input) {
+  const number = parseInteger(input);
 
   if (!Number.isInteger(number) || number < 1 || number > 3999) {
-    throw new Error("Érvénytelen bemenet: 1 és 3999 közötti egész szám szükséges.");
+    throw new Error(INVALID_INPUT_MESSAGE);
   }
 
   let remaining = number;
@@ -38,4 +35,16 @@ function toRoman(input) {
   }
 
   return result;
+}
+
+function parseInteger(input) {
+  if (typeof input === "number") {
+    return input;
+  }
+
+  if (typeof input === "string" && /^[+-]?\d+$/.test(input.trim())) {
+    return Number(input.trim());
+  }
+
+  return NaN;
 }

@@ -5,15 +5,15 @@ function assertInvalid(assert, input) {
   );
 }
 
-QUnit.module("normál működés", function () {  
+QUnit.module("normál működés", function () {
   QUnit.test("2 -> II", function (assert) {
-    assert.strictEqual(toRoman(1), "I");
+    assert.strictEqual(toRoman(2), "II");
   });
-  
+
   QUnit.test("3 -> III", function (assert) {
-    assert.strictEqual(toRoman(1), "I");
+    assert.strictEqual(toRoman(3), "III");
   });
-  
+
   QUnit.test("5 -> V", function (assert) {
     assert.strictEqual(toRoman(5), "V");
   });
@@ -25,7 +25,7 @@ QUnit.module("normál működés", function () {
   QUnit.test("8 -> VIII", function (assert) {
     assert.strictEqual(toRoman(8), "VIII");
   });
-  
+
   QUnit.test("10 -> X", function (assert) {
     assert.strictEqual(toRoman(10), "X");
   });
@@ -37,7 +37,7 @@ QUnit.module("normál működés", function () {
   QUnit.test("20 -> XX", function (assert) {
     assert.strictEqual(toRoman(20), "XX");
   });
-  
+
   QUnit.test("50 -> L", function (assert) {
     assert.strictEqual(toRoman(50), "L");
   });
@@ -58,7 +58,7 @@ QUnit.module("normál működés", function () {
     assert.strictEqual(toRoman(1000), "M");
   });
 });
- 
+
 QUnit.module("kivonásos alak", function () {
   QUnit.test("4 -> IV", function (assert) {
     assert.strictEqual(toRoman(4), "IV");
@@ -71,7 +71,7 @@ QUnit.module("kivonásos alak", function () {
   QUnit.test("14 -> XIV", function (assert) {
     assert.strictEqual(toRoman(14), "XIV");
   });
-  
+
   QUnit.test("40 -> XL", function (assert) {
     assert.strictEqual(toRoman(40), "XL");
   });
