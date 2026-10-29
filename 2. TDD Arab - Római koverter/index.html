@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="utf-8">
+  <title>Római szám átalakító</title>
+</head>
+<body>
+  <form id="converter">
+    <p>A számot a felső mezőbe írd be, majd nyomd meg az Átalakít gombot vagy az Enter-t. A számokat csak 1-től 3999-ig lehet átalakítani.</p>
+    <input id="number" type="text" autofocus>
+    <button type="submit">Átalakít</button>
+  </form>
+  <br>
+  <input id="result" type="text" size="64" readonly>
+  <script src="roman.js"></script>
+  <script>
+    function showRoman() {
+      const output = document.getElementById("result");
+
+      try {
+        output.value = toRoman(document.getElementById("number").value);
+      } catch (error) {
+        output.value = error.message;
+      }
+    }
+
+    document.getElementById("converter").addEventListener("submit", function (event) {
+      event.preventDefault();
+      showRoman();
+    });
+
+    document.getElementById("number").addEventListener("keydown", function (event) {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        showRoman();
+      }
+    });
+  </script>
+</body>
+</html>
