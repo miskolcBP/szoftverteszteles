@@ -41,6 +41,26 @@ QUnit.module("normál működés", function () {
   QUnit.test("20 -> XX", function (assert) {
     assert.strictEqual(toRoman(20), "XX");
   });
+  
+  QUnit.test("50 -> L", function (assert) {
+    assert.strictEqual(toRoman(50), "L");
+  });
+
+  QUnit.test("58 -> LVIII", function (assert) {
+    assert.strictEqual(toRoman(58), "LVIII");
+  });
+
+  QUnit.test("100 -> C", function (assert) {
+    assert.strictEqual(toRoman(100), "C");
+  });
+
+  QUnit.test("500 -> D", function (assert) {
+    assert.strictEqual(toRoman(500), "D");
+  });
+
+  QUnit.test("1000 -> M", function (assert) {
+    assert.strictEqual(toRoman(1000), "M");
+  });
 });
  
 QUnit.module("kivonásos alak", function () {
