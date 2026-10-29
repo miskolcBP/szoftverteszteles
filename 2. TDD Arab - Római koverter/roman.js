@@ -1,7 +1,11 @@
 function toRoman(input) {
-  if (input === 1) {
-    return "I";
+  let result = "";
+  let remaining = input;
+
+  while (remaining >= 1) {
+    result += "I";
+    remaining -= 1;
   }
 
-  throw new Error("nincs implementálva");
+  return result;
 }
