@@ -43,3 +43,16 @@ QUnit.module("normál működés", function () {
   });
 });
  
+QUnit.module("kivonásos alak", function () {
+  QUnit.test("4 -> IV", function (assert) {
+    assert.strictEqual(toRoman(4), "IV");
+  });
+
+  QUnit.test("9 -> IX", function (assert) {
+    assert.strictEqual(toRoman(9), "IX");
+  });
+
+  QUnit.test("14 -> XIV", function (assert) {
+    assert.strictEqual(toRoman(14), "XIV");
+  });
+});
