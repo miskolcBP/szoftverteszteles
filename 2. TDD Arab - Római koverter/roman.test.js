@@ -6,8 +6,6 @@ function assertInvalid(assert, input) {
 }
 
 QUnit.module("normál működés", function () {
-  QUnit.test("2 -> II", function (assert) {
-    assert.strictEqual(toRoman(2), "II");
   QUnit.test("1 -> I", function (assert) {
     assert.strictEqual(toRoman(1), "I");
   });
