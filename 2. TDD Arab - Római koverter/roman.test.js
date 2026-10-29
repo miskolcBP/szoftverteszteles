@@ -75,4 +75,28 @@ QUnit.module("kivonásos alak", function () {
   QUnit.test("14 -> XIV", function (assert) {
     assert.strictEqual(toRoman(14), "XIV");
   });
+  
+  QUnit.test("40 -> XL", function (assert) {
+    assert.strictEqual(toRoman(40), "XL");
+  });
+
+  QUnit.test("90 -> XC", function (assert) {
+    assert.strictEqual(toRoman(90), "XC");
+  });
+
+  QUnit.test("400 -> CD", function (assert) {
+    assert.strictEqual(toRoman(400), "CD");
+  });
+
+  QUnit.test("900 -> CM", function (assert) {
+    assert.strictEqual(toRoman(900), "CM");
+  });
+
+  QUnit.test("1994 -> MCMXCIV", function (assert) {
+    assert.strictEqual(toRoman(1994), "MCMXCIV");
+  });
+
+  QUnit.test("3999 -> MMMCMXCIX", function (assert) {
+    assert.strictEqual(toRoman(3999), "MMMCMXCIX");
+  });
 });
