@@ -1,10 +1,17 @@
 function toRoman(input) {
-  let result = "";
-  let remaining = input;
+  const symbols = [
+    [5, "V"],
+    [1, "I"],
+  ];
 
-  while (remaining >= 1) {
-    result += "I";
-    remaining -= 1;
+  let remaining = input;
+  let result = "";
+
+  for (const [value, symbol] of symbols) {
+    while (remaining >= value) {
+      result += symbol;
+      remaining -= value;
+    }
   }
 
   return result;
