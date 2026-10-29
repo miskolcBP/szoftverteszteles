@@ -112,3 +112,36 @@ QUnit.module("határértékek", function () {
     assertInvalid(assert, "4000");
   });
 });
+
+QUnit.module("érvénytelen bemenet", function () {
+  QUnit.test("negatív szám", function (assert) {
+    assertInvalid(assert, -1);
+    assertInvalid(assert, "-3");
+  });
+
+  QUnit.test("nem egész szám", function (assert) {
+    assertInvalid(assert, 1.5);
+    assertInvalid(assert, 3.14);
+    assertInvalid(assert, "1.5");
+    assertInvalid(assert, "14.0");
+    assertInvalid(assert, "1e3");
+  });
+
+  QUnit.test("nem szám", function (assert) {
+    assertInvalid(assert, "abc");
+    assertInvalid(assert, "");
+    assertInvalid(assert, "   ");
+    assertInvalid(assert, null);
+    assertInvalid(assert, undefined);
+    assertInvalid(assert, NaN);
+  });
+
+  QUnit.test("egész számot tartalmazó szöveg érvényes", function (assert) {
+    assert.strictEqual(toRoman("1"), "I");
+    assert.strictEqual(toRoman("14"), "XIV");
+    assert.strictEqual(toRoman("+14"), "XIV");
+    assert.strictEqual(toRoman(" 58 "), "LVIII");
+    assert.strictEqual(toRoman("1994"), "MCMXCIV");
+    assert.strictEqual(toRoman("3999"), "MMMCMXCIX");
+  });
+});
