@@ -15,6 +15,10 @@ const ROMAN_NUMERALS = [
 ];
 
 function toRoman(input) {
+  if (typeof input !== "number" || !Number.isInteger(input) || input < 1 || input > 3999) {
+    throw new Error("Érvénytelen bemenet: 1 és 3999 közötti egész szám szükséges.");
+  }
+
   let remaining = input;
   let result = "";
 
