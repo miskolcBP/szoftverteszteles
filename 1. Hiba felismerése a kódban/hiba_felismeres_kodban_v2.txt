@@ -1,0 +1,763 @@
+1. calculateDiscountedPrice
+---------------------------
+
+Elvárt sávok:
+- 10 000 Ft alatt: 0%
+- 10 000–24 999 Ft: 5%
+- 25 000–49 999 Ft: 10%
+- 50 000 Ft-tól: 15%
+A VIP ügyfél ehhez 5 százalékpontot kap. A plafon 20%. Negatív érték tilos.
+A visszaadott szám a fizetendő összeg.
+
+
+1.1. A 10 000 Ft-os határ kimarad az 5%-ból
+
+Hibás részlet:
+
+    if (orderValue > 10000 && orderValue < 25000) {
+        discount = 0.05;
+
+Mi a baj:
+A specifikáció szerint 10 000 Ft-tól jár 5%. A > 10000 feltétel a pontosan
+10 000 Ft-os rendelést kint hagyja, ezért arra 0% jut. A felső összehasonlítás
+(< 25000) rendben van: 24 999 még 5%, 25 000 már a következő sáv.
+
+Javítás:
+
+    if (orderValue >= 10000 && orderValue < 25000) {
+        discount = 0.05;
+
+
+1.2. Az 50 000 Ft még a 10%-os sávba esik
+
+Hibás részlet:
+
+    } else if (orderValue >= 25000 && orderValue <= 50000) {
+        discount = 0.10;
+    } else if (orderValue > 50000) {
+        discount = 0.15;
+
+Mi a baj:
+25 000-től 49 999-ig 10% jár, 50 000-től 15%. A <= 50000 a pontosan 50 000 Ft-ot
+is 10%-kal számolja. A következő ág csak 50 000 felett ad 15%-ot, ezért az
+50 000 Ft-os határ mindkét helyen rossz.
+
+Példa: 50 000 Ft, nem VIP. Elvárt kedvezmény 15%, fizetendő 42 500 Ft.
+A kód 10%-os kedvezményt választ.
+
+Javítás:
+
+    } else if (orderValue >= 25000 && orderValue < 50000) {
+        discount = 0.10;
+    } else if (orderValue >= 50000) {
+        discount = 0.15;
+
+
+1.3. A VIP kedvezmény 5 egész, nem 5 százalékpont
+
+Hibás részlet:
+
+    if (isVip === true) {
+        discount += 5;
+    }
+
+    if (discount > 0.20) {
+        discount = 0.20;
+    }
+
+Mi a baj:
+5 százalékpont 0.05, nem 5. A discount változó törtként tárolja a kedvezményt
+(0.05, 0.10, 0.15). Ha ehhez 5-öt adunk, VIP esetén az érték legalább 5 lesz.
+Az utána lévő plafon minden 0.20-nál nagyobb értéket 0.20-ra vág, ezért minden
+VIP rendelés 20% kedvezményt kap, a sávtól függetlenül.
+
+Példa: 8 000 Ft, VIP. Az alapkedvezmény 0, plusz 5 százalékpont, tehát 5%.
+Fizetendő: 7 600 Ft. A kód 20%-ra vágja a kedvezményt.
+
+A plafon összehasonlítása (0.20) önmagában jó. Akkor működik helyesen, ha a
+VIP ág 0.05-öt ad hozzá. 15% + 5 százalékpont pontosan 20%, ezt nem kell tovább vágni.
+
+Javítás:
+
+    if (isVip === true) {
+        discount += 0.05;
+    }
+
+
+1.4. A visszatérés a kedvezmény mértékét vonja le, nem a kedvezmény összegét
+
+Hibás részlet:
+
+    return orderValue - discount;
+
+Mi a baj:
+A discount 0.05 azt jelenti, hogy az ár 5%-át kell elengedni. A kód magát a
+0.05-öt vonja le a forintösszegből.
+
+Példa: 30 000 Ft, nem VIP. 10% kedvezmény, fizetendő 27 000 Ft.
+A kód 30 000 - 0.10 = 29 999.9 értéket ad vissza.
+
+Javítás:
+
+    return orderValue * (1 - discount);
+
+
+1.5. A negatív rendelési érték átmegy
+
+Hibás részlet:
+
+    let discount = 0;
+    if (orderValue > 10000 && orderValue < 25000) {
+
+Mi a baj:
+Negatív értékre egyik kedvezménysáv sem illeszkedik, a kedvezmény 0 marad, és a
+függvény visszaadja a negatív számot. A specifikáció a negatív értéket nem
+engedi meg, ezért hibát kell jelezni, nem pedig árat számolni.
+
+Javítás, a függvény elején:
+
+    if (orderValue < 0) {
+        throw new Error("Negatív rendelési érték nem megengedett");
+    }
+
+
+Javított függvény:
+
+    function calculateDiscountedPrice(orderValue, isVip) {
+        if (orderValue < 0) {
+            throw new Error("Negatív rendelési érték nem megengedett");
+        }
+
+        let discount = 0;
+        if (orderValue >= 10000 && orderValue < 25000) {
+            discount = 0.05;
+        } else if (orderValue >= 25000 && orderValue < 50000) {
+            discount = 0.10;
+        } else if (orderValue >= 50000) {
+            discount = 0.15;
+        }
+
+        if (isVip === true) {
+            discount += 0.05;
+        }
+
+        if (discount > 0.20) {
+            discount = 0.20;
+        }
+
+        return orderValue * (1 - discount);
+    }
+
+
+2. calculateParkingFee
+----------------------
+
+Az első 15 perc ingyenes. 15 perc felett a teljes idő minden megkezdett órája
+600 Ft. A megkezdett óra felfelé kerekít: 16 perc és 60 perc is 600 Ft,
+61 perc 1 200 Ft. A normál díj legfeljebb 5 000 Ft. Hétvégén ennek a normál
+díjnak az 50%-a fizetendő. A VIP erre további 20% kedvezményt kap. Negatív idő tilos.
+
+
+2.1. A 15. perc nincs benne az ingyenes ágban
+
+Hibás részlet:
+
+    if (minutes < 15) {
+        return 0;
+    }
+
+Mi a baj:
+Az első 15 perc ingyenes, tehát 15 percnél is 0 Ft jár. A < 15 ezt a határt
+kihagyja. Most mégis 0 jön ki, de csak azért, mert a 15 perc lefelé kerekítve
+0 óra, és 0 * 600 = 0. Ha az órát helyesen, felfelé kerekítjük, a 15 percből
+1 óra és 600 Ft lesz. A feltételt ezért <= 15-re kell cserélni, és ennek a
+negatív idő ellenőrzése után kell állnia.
+
+Javítás:
+
+    if (minutes <= 15) {
+        return 0;
+    }
+
+
+2.2. Az óra lefelé van kerekítve
+
+Hibás részlet:
+
+    let hours = Math.floor(minutes / 60);
+    let fee = hours * 600;
+
+Mi a baj:
+A megkezdett óra nem a már letelt teljes óra. A Math.floor lefelé kerekít, ezért
+16–59 perc 0 órának számít, a díj 0 Ft. 90 perc 1 óra lesz 2 helyett.
+
+Példák a javítás után, kedvezmény nélkül:
+- 16 perc: 600 Ft
+- 60 perc: 600 Ft
+- 61 perc: 1 200 Ft
+- 90 perc: 1 200 Ft
+
+Javítás:
+
+    let hours = Math.ceil(minutes / 60);
+    let fee = hours * 600;
+
+
+2.3. A VIP kedvezmény 20 Ft, nem 20%
+
+Hibás részlet:
+
+    if (isVip) {
+        fee = fee - 20;
+    }
+
+Mi a baj:
+A további 20% kedvezmény a díj 80%-ának fizetését jelenti (fee * 0.8), nem
+20 forint levonását. A kód ráadásul a 16–59 perces, 0 Ft-os díjból -20 Ft-ot csinál.
+A napi plafon csak a túl nagy díjat fogja meg, a negatív értéket visszaadja.
+
+Példa: 600 Ft-os normál díj, VIP, nem hétvége. Elvárt: 480 Ft. A kód: 580 Ft.
+
+Javítás:
+
+    if (isVip) {
+        fee = fee * 0.8;
+    }
+
+
+2.4. A napi plafon a kedvezmények után fut
+
+Hibás részlet:
+
+    if (isWeekend) {
+        fee = fee * 0.5;
+    }
+
+    if (isVip) {
+        fee = fee - 20;
+    }
+
+    if (fee > 5000) {
+        fee = 5000;
+    }
+
+Mi a baj:
+Az 5 000 Ft a normál díj napi maximuma. A hétvégi díj ennek a normál díjnak az
+50%-a, a VIP kedvezmény pedig ezután jön. A kód előbb csökkenti a díjat, és csak
+a végén nézi az 5 000 Ft-ot.
+
+Példa: 10 óra, hétvége, nem VIP. A nyers díj 6 000 Ft, a normál díj plafonnal
+5 000 Ft, a hétvégi díj 2 500 Ft. A kód felezi a 6 000-et, 3 000 Ft lesz, és a
+plafon már nem lép életbe.
+
+Javítás: a plafon a kedvezmények elé kerül.
+
+    if (fee > 5000) {
+        fee = 5000;
+    }
+
+    if (isWeekend) {
+        fee = fee * 0.5;
+    }
+
+    if (isVip) {
+        fee = fee * 0.8;
+    }
+
+
+2.5. A negatív idő ingyenesnek számít
+
+Hibás részlet:
+
+    if (minutes < 15) {
+        return 0;
+    }
+
+Mi a baj:
+A negatív perc is kisebb 15-nél, ezért a függvény 0 Ft-ot ad vissza. Ezt nem
+szabad díjként kezelni. A vizsgálatot a többi számítás elé kell tenni, különben
+a javított ingyenes ág (<= 15) a negatív értéket is elnyelné.
+
+Javítás, a függvény elején:
+
+    if (minutes < 0) {
+        throw new Error("Negatív parkolási idő nem megengedett");
+    }
+
+
+Javított függvény:
+
+    function calculateParkingFee(minutes, isWeekend, isVip) {
+        if (minutes < 0) {
+            throw new Error("Negatív parkolási idő nem megengedett");
+        }
+
+        if (minutes <= 15) {
+            return 0;
+        }
+
+        let hours = Math.ceil(minutes / 60);
+        let fee = hours * 600;
+
+        if (fee > 5000) {
+            fee = 5000;
+        }
+
+        if (isWeekend) {
+            fee = fee * 0.5;
+        }
+
+        if (isVip) {
+            fee = fee * 0.8;
+        }
+
+        return fee;
+    }
+
+
+3. calculateTicketPrice
+-----------------------
+
+Alapár 3 000 Ft. 6 éves kor alatt ingyenes. 6–17 év között 30% kedvezmény.
+65 évtől 40%. A diák 20%-ot kap. Egyszerre csak a legnagyobb kedvezmény számít.
+A 3D felár 800 Ft, és erre a felárra nem jár kedvezmény. A negatív életkor és
+a 120 év feletti életkor érvénytelen. A 120 év még érvényes.
+
+
+3.1. A 6 éves ingyen jegyet kap
+
+Hibás részlet:
+
+    if (age <= 6) {
+        price = 0;
+    } else if (age < 18) {
+        price = price * 0.7;
+
+Mi a baj:
+6 éves kor alatt ingyenes a jegy. A 6 éves már a 6–17 éves sávba tartozik, ott
+30% kedvezmény jár. A <= 6 a 6 éveset is ingyenre teszi. Az age < 18 felső határa
+jó: a 17 éves még kedvezményes, a 18 éves már nem. Ezt nem kell átírni.
+
+Példa: 6 éves, nem diák, nem 3D. Elvárt: 2 100 Ft. A kód: 0 Ft.
+
+Javítás:
+
+    if (age < 6) {
+        price = 0;
+    } else if (age < 18) {
+        price = price * 0.7;
+
+
+3.2. A 65 éves nem kap nyugdíjas kedvezményt
+
+Hibás részlet:
+
+    } else if (age > 65) {
+        price = price * 0.6;
+    }
+
+Mi a baj:
+65 éves kortól 40% kedvezmény jár, tehát a 65 éves is. A > 65 miatt ő teljes
+árat fizet. A 0.6 szorzó maga helyes: 40% kedvezmény után az ár 60% marad.
+
+Példa: 65 éves, nem diák, nem 3D. Elvárt: 1 800 Ft. A kód: 3 000 Ft.
+
+Javítás:
+
+    } else if (age >= 65) {
+        price = price * 0.6;
+    }
+
+
+3.3. A kedvezmények halmozódnak
+
+Hibás részlet:
+
+    if (isStudent) {
+        price = price * 0.8;
+    }
+
+Mi a baj:
+A specifikáció szerint a több kedvezmény közül csak a legnagyobb alkalmazható.
+A diákág az életkori kedvezmény után mindig lefut, ezért a kettő szorzódik.
+
+Példa: 10 éves diák. A nagyobb kedvezmény 30%, fizetendő 2 100 Ft.
+A kód előbb 30%-ot, majd erre még 20%-ot alkalmaz: 3 000 * 0.7 * 0.8 = 1 680 Ft.
+
+A 6 év alatti díjmentesség 100%-os kedvezmény, az nagyobb a diák 20%-ánál.
+A 65 év feletti 40% is nagyobb nála. Felnőtt diáknál csak a 20% marad.
+
+Javítás: előbb a kedvezmény mértékét kell kiválasztani, és csak azt szabad
+alkalmazni az alapárra.
+
+    let discount = 0;
+    if (age < 6) {
+        discount = 1;
+    } else if (age < 18) {
+        discount = 0.30;
+    } else if (age >= 65) {
+        discount = 0.40;
+    }
+
+    if (isStudent && discount < 0.20) {
+        discount = 0.20;
+    }
+
+    let price = 3000 * (1 - discount);
+
+
+3.4. A 3D felár az ár 80%-a, és a kedvezmény rá is érvényes
+
+Hibás részlet:
+
+    if (is3D) {
+        price = price * 1.8;
+    }
+
+Mi a baj:
+A felár fix 800 Ft. A * 1.8 ehelyett az aktuális ár 80%-át teszi hozzá.
+Mivel ez a kedvezmény után fut, a felár a már csökkentett árból számolódik,
+pedig a felárra nem jár kedvezmény. Ingyen jegynél az ár 0, 0 * 1.8 továbbra is 0,
+így a 3D felár elvész.
+
+Példák:
+- 10 éves, nem 3D: 2 100 Ft. 3D-ben: 2 100 + 800 = 2 900 Ft.
+  A kód: 2 100 * 1.8 = 3 780 Ft.
+- 4 éves, 3D: a jegy ingyen, a felár 800 Ft. A kód: 0 Ft.
+
+Javítás: a kedvezmény csak a 3 000 Ft-os alapárra vonatkozik, a 800 Ft utána jön.
+
+    if (is3D) {
+        price = price + 800;
+    }
+
+
+3.5. Az érvénytelen életkor árat kap
+
+Hibás részlet:
+
+    if (age <= 6) {
+        price = 0;
+    } else if (age < 18) {
+        price = price * 0.7;
+    } else if (age > 65) {
+        price = price * 0.6;
+    }
+
+Mi a baj:
+A negatív életkor és a 120 év feletti életkor érvénytelen. A kód mindkettőt
+érvényesként kezeli. A negatív életkor beleesik a <= 6 ágba, ezért ingyen jegyet
+kap. A 121 éves a > 65 ágba esik, ezért 40% kedvezményt kap. A 120 év még
+érvényes, arra jár a 40%.
+
+A vizsgálatot az árszámítás elé kell tenni.
+
+Javítás:
+
+    if (age < 0 || age > 120) {
+        throw new Error("Érvénytelen életkor");
+    }
+
+
+Javított függvény:
+
+    function calculateTicketPrice(age, isStudent, is3D) {
+        if (age < 0 || age > 120) {
+            throw new Error("Érvénytelen életkor");
+        }
+
+        let discount = 0;
+        if (age < 6) {
+            discount = 1;
+        } else if (age < 18) {
+            discount = 0.30;
+        } else if (age >= 65) {
+            discount = 0.40;
+        }
+
+        if (isStudent && discount < 0.20) {
+            discount = 0.20;
+        }
+
+        let price = 3000 * (1 - discount);
+
+        if (is3D) {
+            price = price + 800;
+        }
+
+        return price;
+    }
+
+
+4. calculateGrade
+-----------------
+
+Elmélet legfeljebb 60 pont, gyakorlat legfeljebb 40. A vizsga csak akkor sikeres,
+ha az elmélet legalább 30 és a gyakorlat legalább 20. Ha bármelyik minimum
+hiányzik, a jegy 1. Ha mindkettő megvan, az összpontszám sávjai:
+
+- 50–59: 2
+- 60–69: 3
+- 70–84: 4
+- 85–100: 5
+
+A 0–49 sáv is 1-es, de érvényes pontoknál ez csak a bukáshoz kell: a két minimum
+együtt legalább 50 pont. Érvénytelen pontszámnál nem jegyet kell adni, hanem hibát.
+
+
+4.1. Elég, ha az egyik rész teljesíti a minimumot
+
+Hibás részlet:
+
+    if (theory < 30 && practice < 20) {
+        return 1;
+    }
+
+Mi a baj:
+A && csak akkor bukik, ha mindkét rész minimum alatt van. A specifikáció szerint
+mindkét minimumnak teljesülnie kell. Ha csak az egyik hiányzik, a vizsga sikertelen,
+a jegy 1.
+
+Példa: elmélet 25, gyakorlat 40. Az elmélet 30 alatt van, tehát 1-es.
+A kód nem lép be az első ágba, az összpont 65, a függvény 3-ast ad.
+
+A másik irány ugyanilyen: elmélet 60, gyakorlat 19. Elvárt jegy 1.
+A kód az összpont 79 miatt 4-est ad.
+
+Javítás:
+
+    if (theory < 30 || practice < 20) {
+        return 1;
+    }
+
+
+4.2. A 60, a 70 és a 85 pont a rossz jegybe esik
+
+Hibás részlet:
+
+    if (total < 50) {
+        return 1;
+    } else if (total <= 60) {
+        return 2;
+    } else if (total <= 70) {
+        return 3;
+    } else if (total <= 85) {
+        return 4;
+    } else {
+        return 5;
+    }
+
+Mi a baj:
+A sávok felső határa egy ponttal arrébb van. A többi pont a saját sávjában marad,
+csak a három határpont csúszik a gyengébb jegybe:
+
+- 60 pont: elvárt jegy 3, a kód 2-est ad, mert a <= 60 még a 2-es ág
+- 70 pont: elvárt jegy 4, a kód 3-ast ad, mert a <= 70 még a 3-as ág
+- 85 pont: elvárt jegy 5, a kód 4-est ad, mert a <= 85 még a 4-es ág
+
+Példa, ahol mindkét minimum megvan: elmélet 40, gyakorlat 20, összesen 60.
+Elvárt jegy 3. A kód 2-est ad.
+
+Javítás:
+
+    if (total <= 59) {
+        return 2;
+    } else if (total <= 69) {
+        return 3;
+    } else if (total <= 84) {
+        return 4;
+    } else {
+        return 5;
+    }
+
+Ha a két minimum már teljesült, az összpont legalább 50. A 0–49 ág ilyenkor
+nem érhető el, ezért a javított változatból kimarad. A bukás a 4.1. pontban,
+a minimumok vizsgálatánál kap 1-est.
+
+
+4.3. Az érvénytelen pontszám jegyet kap
+
+Hibás részlet:
+
+    let total = theory + practice;
+
+    if (theory < 30 && practice < 20) {
+        return 1;
+    }
+
+Mi a baj:
+Érvénytelen az elmélet, ha 0-nál kisebb vagy 60-nál nagyobb. Érvénytelen a
+gyakorlat, ha 0-nál kisebb vagy 40-nél nagyobb. A kód ezekből is jegyet számol.
+
+Példák:
+- elmélet 70, gyakorlat 20: az elmélet több mint 60, ez hiba.
+  A kód összesen 90 pontot lát, és 5-öst ad.
+- elmélet -1, gyakorlat -1: mindkettő érvénytelen. A kód 1-est ad, mintha a
+  hallgató szabályosan megbukott volna.
+
+A vizsgálatot a jegy számítása elé kell tenni. A 0 pont érvényes pontszám,
+csak nem éri el a minimumot, ezért arra 1-es jár, nem hiba.
+
+Javítás:
+
+    if (theory < 0 || theory > 60 || practice < 0 || practice > 40) {
+        throw new Error("Érvénytelen pontszám");
+    }
+
+
+Javított függvény:
+
+    function calculateGrade(theory, practice) {
+        if (theory < 0 || theory > 60 || practice < 0 || practice > 40) {
+            throw new Error("Érvénytelen pontszám");
+        }
+
+        if (theory < 30 || practice < 20) {
+            return 1;
+        }
+
+        let total = theory + practice;
+
+        if (total <= 59) {
+            return 2;
+        } else if (total <= 69) {
+            return 3;
+        } else if (total <= 84) {
+            return 4;
+        } else {
+            return 5;
+        }
+    }
+
+
+5. classifyPackage
+------------------
+
+A vizsgálat sorrendje számít, mert egy kis csomag a közepes és a nagy határai közé
+is beférne. Először az érvénytelenség, azután SMALL, MEDIUM, LARGE, különben OVERSIZE.
+
+- SMALL: legfeljebb 2 kg, és mindhárom méret legfeljebb 30 cm
+- MEDIUM: legfeljebb 10 kg, és egyik méret sem nagyobb 60 cm-nél
+- LARGE: legfeljebb 30 kg, és egyik méret sem nagyobb 120 cm-nél
+- különben OVERSIZE
+- ha bármely méret vagy a tömeg 0 vagy negatív: INVALID
+
+
+5.1. A SMALL határai nincsenek benne a kategóriában
+
+Hibás részlet:
+
+    if (weight < 2 &&
+        length < 30 &&
+        width < 30 &&
+        height < 30) {
+        return "SMALL";
+    }
+
+Mi a baj:
+A legfeljebb 2 kg és a legfeljebb 30 cm a határt is tartalmazza. A < operátor
+a pontosan 2 kg-os és a pontosan 30 cm-es csomagot kizárja. A dimenziók egymás
+közti ÉS kapcsolata helyes: mindhárom méretnek bele kell férnie.
+
+Példa: 2 kg, 30 cm, 30 cm, 30 cm. Ez SMALL. A kód nem lép be ide. A következő
+ág viszont igaz rá, ezért MEDIUM-ot ad vissza.
+
+Javítás:
+
+    if (weight <= 2 &&
+        length <= 30 &&
+        width <= 30 &&
+        height <= 30) {
+        return "SMALL";
+    }
+
+
+5.2. A MEDIUM-nál elég, ha egyetlen méret belefér
+
+Hibás részlet:
+
+    if (weight <= 10 &&
+        (length <= 60 || width <= 60 || height <= 60)) {
+        return "MEDIUM";
+    }
+
+Mi a baj:
+„Egyik mérete sem nagyobb 60 cm-nél” azt jelenti, hogy mindhárom méret legfeljebb
+60 cm. Ehhez ÉS kell. A VAGY akkor is MEDIUM-ot ad, ha csak egy oldal fér bele,
+a másik kettő pedig nagyobb 60 cm-nél. A tömeg feltétele (<= 10) önmagában jó.
+
+Példa: 5 kg, 70 cm, 10 cm, 10 cm. A 70 cm miatt nem MEDIUM. Minden méret
+legfeljebb 120 cm, a tömeg legfeljebb 30 kg, tehát LARGE. A kód a 10 cm-es oldal
+miatt MEDIUM-ot ad.
+
+Javítás:
+
+    if (weight <= 10 &&
+        length <= 60 &&
+        width <= 60 &&
+        height <= 60) {
+        return "MEDIUM";
+    }
+
+
+5.3. A 0 és a negatív érték nem INVALID
+
+Hibás részlet:
+
+    function classifyPackage(weight, length, width, height) {
+        if (weight < 2 &&
+            length < 30 &&
+            width < 30 &&
+            height < 30) {
+            return "SMALL";
+        }
+
+Mi a baj:
+A függvény sehol nem ad vissza INVALID-ot. A 0 és a negatív szám a későbbi
+összehasonlításokban érvényes adatnak látszik.
+
+Példák:
+- 0 kg, 10 cm, 10 cm, 10 cm: INVALID. A kód SMALL-t ad, mert 0 < 2 és 10 < 30.
+- -1 kg, 200 cm, 200 cm, 200 cm: INVALID. Egyik méretág sem igaz rá, ezért a
+  függvény végén OVERSIZE lesz.
+
+A vizsgálatot az első kategória elé kell tenni. Különben a javított SMALL ág
+(<=) a 0-t és a negatívot is elnyelné, ha a méretek elég kicsik.
+
+Javítás:
+
+    if (weight <= 0 || length <= 0 || width <= 0 || height <= 0) {
+        return "INVALID";
+    }
+
+
+Javított függvény:
+
+    function classifyPackage(weight, length, width, height) {
+        if (weight <= 0 || length <= 0 || width <= 0 || height <= 0) {
+            return "INVALID";
+        }
+
+        if (weight <= 2 &&
+            length <= 30 &&
+            width <= 30 &&
+            height <= 30) {
+            return "SMALL";
+        }
+
+        if (weight <= 10 &&
+            length <= 60 &&
+            width <= 60 &&
+            height <= 60) {
+            return "MEDIUM";
+        }
+
+        if (weight <= 30 &&
+            length <= 120 &&
+            width <= 120 &&
+            height <= 120) {
+            return "LARGE";
+        }
+
+        return "OVERSIZE";
+    }
