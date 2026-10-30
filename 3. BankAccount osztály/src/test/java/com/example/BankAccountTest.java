@@ -67,6 +67,7 @@ public class BankAccountTest {
             IllegalArgumentException.class,
             () -> account.withdraw(1000)
         );
+        assertEquals(500.0, account.getBalance());
     }
 
     @Test
@@ -76,6 +77,7 @@ public class BankAccountTest {
             IllegalArgumentException.class,
             () -> account.deposit(-100)
         );
+        assertEquals(0.0, account.getBalance());
     }
 
     @Test
@@ -85,6 +87,7 @@ public class BankAccountTest {
             IllegalArgumentException.class,
             () -> account.deposit(0)
         );
+        assertEquals(0.0, account.getBalance());
     }
 
     @Test
@@ -94,6 +97,7 @@ public class BankAccountTest {
             IllegalArgumentException.class,
             () -> account.withdraw(-100)
         );
+        assertEquals(0.0, account.getBalance());
     }
 
     @Test
@@ -103,5 +107,6 @@ public class BankAccountTest {
             IllegalArgumentException.class,
             () -> account.withdraw(0)
         );
+        assertEquals(0.0, account.getBalance());
     }
 }
