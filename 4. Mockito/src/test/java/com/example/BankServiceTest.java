@@ -3,7 +3,9 @@ package com.example;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 public class BankServiceTest {
@@ -27,6 +29,32 @@ public class BankServiceTest {
         );
  
         verify(notificationService)
+            .send("Deposit successful");
+    }
+
+    @Test
+    void failedDepositDoesNotSendNotification() {
+
+        NotificationService notificationService =
+            mock(NotificationService.class);
+
+        BankService bankService =
+            new BankService(notificationService);
+
+        BankAccount account =
+            new BankAccount();
+
+        assertThrows(
+            IllegalArgumentException.class,
+            () -> bankService.deposit(account, -100)
+        );
+
+        assertEquals(
+            0.0,
+            account.getBalance()
+        );
+
+        verify(notificationService, never())
             .send("Deposit successful");
     }
 }
