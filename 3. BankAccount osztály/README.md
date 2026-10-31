@@ -17,3 +17,6 @@ Eclipse-ben: jobb klikk a `BankAccountTest` osztályon, majd Run As → JUnit Te
 - `src/main/java/com/example/BankAccount.java` – a számla
 - `src/test/java/com/example/BankAccountTest.java` – a tesztek
 - `pom.xml` – Maven, JUnit 5
+
+## Releváns commmit-ok:
+https://github.com/miskolcBP/szoftverteszteles/commits/main/3.%20BankAccount%20oszt%C3%A1ly
