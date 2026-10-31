@@ -24,3 +24,6 @@ Eclipse-ben: jobb klikk a tesztosztályon, majd Run As → JUnit Test.
 - `src/test/java/com/example/ExchangeRateServiceTest.java` – a beállított árfolyam
 - `src/test/java/com/example/BankAccountTest.java` – a számla saját tesztjei
 - `pom.xml` – Maven, JUnit 5, Mockito
+
+## Releváns commmit-ok:
+https://github.com/miskolcBP/szoftverteszteles/commits/main/4.%20Mockito
